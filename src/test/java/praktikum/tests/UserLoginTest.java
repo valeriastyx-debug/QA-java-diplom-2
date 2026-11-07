@@ -1,7 +1,12 @@
+
 package praktikum.tests;
 
+import io.qameta.allure.Description;
+import io.qameta.allure.junit4.DisplayName;
 import io.restassured.response.Response;
+import org.apache.http.HttpStatus;
 import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 import praktikum.client.UserClient;
 import praktikum.model.User;
@@ -14,48 +19,74 @@ import static org.hamcrest.Matchers.notNullValue;
 public class UserLoginTest extends BaseTest {
 
     private final UserClient userClient = new UserClient();
+
+    private User user;
     private String accessToken;
 
-    @Test
-    public void loginExistingUserTest() {
+    @Before
+    public void setUpUser() {
         String email = "test-" + UUID.randomUUID() + "@yandex.ru";
         String password = "password123";
         String name = "Test User";
 
-        User user = new User(email, password, name);
+        user = new User(email, password, name);
 
-        // Сначала регистрируем пользователя
         Response createResponse = userClient.create(user);
 
         createResponse.then()
-                .statusCode(200)
+                .statusCode(HttpStatus.SC_OK)
                 .body("success", is(true));
 
-        // Сохраняем токен, чтобы удалить пользователя после теста
         accessToken = createResponse.path("accessToken");
+    }
 
-        // Выполняем вход с данными зарегистрированного пользователя
+    @Test
+    @DisplayName("Авторизация существующего пользователя")
+    @Description("Проверка успешной авторизации зарегистрированного пользователя")
+    public void loginExistingUserTest() {
+
         Response loginResponse = userClient.login(user);
 
-        // Проверяем успешную авторизацию
         loginResponse.then()
-                .statusCode(200)
+                .statusCode(HttpStatus.SC_OK)
                 .body("success", is(true))
                 .body("accessToken", notNullValue());
     }
 
     @Test
-    public void loginWithIncorrectCredentialsTest() {
-        String email = "wrong-" + UUID.randomUUID() + "@yandex.ru";
-        String password = "wrongPassword";
-        String name = "Test User";
+    @DisplayName("Авторизация с неверным логином")
+    @Description("Проверка ошибки авторизации при неверном email и правильном пароле")
+    public void loginWithIncorrectEmailTest() {
 
-        User user = new User(email, password, name);
+        User incorrectUser = new User(
+                "wrong-" + UUID.randomUUID() + "@yandex.ru",
+                user.getPassword(),
+                user.getName()
+        );
 
-        Response loginResponse = userClient.login(user);
+        Response loginResponse = userClient.login(incorrectUser);
 
         loginResponse.then()
-                .statusCode(401)
+                .statusCode(HttpStatus.SC_UNAUTHORIZED)
+                .body("success", is(false))
+                .body("message", is("email or password are incorrect"));
+    }
+
+    @Test
+    @DisplayName("Авторизация с неверным паролем")
+    @Description("Проверка ошибки авторизации при правильном email и неверном пароле")
+    public void loginWithIncorrectPasswordTest() {
+
+        User incorrectUser = new User(
+                user.getEmail(),
+                "wrongPassword",
+                user.getName()
+        );
+
+        Response loginResponse = userClient.login(incorrectUser);
+
+        loginResponse.then()
+                .statusCode(HttpStatus.SC_UNAUTHORIZED)
                 .body("success", is(false))
                 .body("message", is("email or password are incorrect"));
     }

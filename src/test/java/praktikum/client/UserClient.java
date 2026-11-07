@@ -1,5 +1,6 @@
 package praktikum.client;
 
+import io.qameta.allure.Step;
 import io.restassured.response.Response;
 import praktikum.model.User;
 
@@ -11,6 +12,7 @@ public class UserClient {
     private static final String LOGIN_USER_PATH = "/api/auth/login";
     private static final String USER_PATH = "/api/auth/user";
 
+    @Step("Создание пользователя")
     public Response create(User user) {
         return given()
                 .header("Content-type", "application/json")
@@ -18,6 +20,7 @@ public class UserClient {
                 .post(CREATE_USER_PATH);
     }
 
+    @Step("Авторизация пользователя")
     public Response login(User user) {
         return given()
                 .header("Content-type", "application/json")
@@ -25,6 +28,7 @@ public class UserClient {
                 .post(LOGIN_USER_PATH);
     }
 
+    @Step("Удаление пользователя")
     public Response delete(String accessToken) {
         return given()
                 .header("Authorization", accessToken)

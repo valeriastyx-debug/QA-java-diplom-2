@@ -18,6 +18,8 @@
         <junit.version>4.13.2</junit.version>
         <rest-assured.version>5.3.0</rest-assured.version>
         <allure.version>2.24.0</allure.version>
+        <lombok.version>1.18.36</lombok.version>
+        <httpcore.version>4.4.16</httpcore.version>
     </properties>
 
     <dependencies>
@@ -54,6 +56,22 @@
             <scope>test</scope>
         </dependency>
 
+        <!-- Lombok для генерации конструкторов, геттеров и сеттеров -->
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <version>${lombok.version}</version>
+            <scope>provided</scope>
+        </dependency>
+
+        <!-- Apache HttpComponents для именованных HTTP-кодов -->
+        <dependency>
+            <groupId>org.apache.httpcomponents</groupId>
+            <artifactId>httpcore</artifactId>
+            <version>${httpcore.version}</version>
+            <scope>test</scope>
+        </dependency>
+
     </dependencies>
 
     <build>
@@ -77,9 +95,7 @@
 
                     <!-- Результаты Allure сохраняем в target/allure-results -->
                     <systemPropertyVariables>
-                        <allure.results.directory>
-                            ${project.build.directory}/allure-results
-                        </allure.results.directory>
+                        <allure.results.directory>${project.build.directory}/allure-results</allure.results.directory>
                     </systemPropertyVariables>
 
                 </configuration>
